@@ -1,1 +1,0 @@
-# mate-fastapi-homework-4-task
