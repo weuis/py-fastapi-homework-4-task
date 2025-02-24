@@ -17,7 +17,7 @@ class FakeS3Storage(S3StorageInterface):
         """
         self.storage: Dict[str, bytes] = {}
 
-    def upload_file(self, file_name: str, file_data: Union[bytes, bytearray]) -> None:
+    async def upload_file(self, file_name: str, file_data: Union[bytes, bytearray]) -> None:
         """
         Simulates file upload to S3 by storing the file data in a dictionary.
 
@@ -26,7 +26,7 @@ class FakeS3Storage(S3StorageInterface):
         """
         self.storage[file_name] = file_data
 
-    def get_file_url(self, file_name: str) -> str:
+    async def get_file_url(self, file_name: str) -> str:
         """
         Generates a fake URL for a stored file.
 

@@ -16,6 +16,9 @@ RUN python -m pip install --upgrade pip && \
 COPY ./poetry.lock /usr/src/poetry/poetry.lock
 COPY ./pyproject.toml /usr/src/poetry/pyproject.toml
 
+# Copy pytest config file
+COPY ./pytest.ini /usr/src/config/pytest.ini
+
 # Configure Poetry to avoid creating a virtual environment
 RUN poetry config virtualenvs.create false
 

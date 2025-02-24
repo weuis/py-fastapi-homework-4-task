@@ -2,6 +2,91 @@
 
 Welcome to the **Movie Theater API** project! This educational assignment is designed to help you develop and refine your skills in creating robust web applications using FastAPI, SQLAlchemy, and Docker. Here's what the project offers:
 
+## Table of Contents
+
+- [Movie Theater API Project](#movie-theater-api-project)
+  - [Features](#features)
+    - [Database setup](#database-setup)
+    - [Data population](#data-population)
+    - [Docker integration](#docker-integration)
+    - [Project structure](#project-structure)
+    - [Updated Project Structure Overview](#updated-project-structure-overview)
+  - [Root Directory](#root-directory)
+  - [Commands](#commands)
+  - [Docker Configuration](#docker-configuration)
+  - [Source Directory (src)](#source-directory-src)
+  - [Additional Features](#additional-features)
+  - [Tip: Using Dependency Injection in FastAPI](#tip-using-dependency-injection-in-fastapi)
+  - [Using `get_db` for Database Dependency Injection](#using-get_db-for-database-dependency-injection)
+  - [Extended Dependency Injection in FastAPI](#extended-dependency-injection-in-fastapi)
+  - [Handling Authentication via Authorization Headers](#handling-authentication-via-authorization-headers)
+  - [Summary](#summary)
+  - [Primary Services (docker-compose.yml)](#primary-services-docker-composeyml)
+    - [1. Database Service (`db`)](#1-database-service-db)
+    - [2. pgAdmin Service (`pgadmin`)](#2-pgadmin-service-pgadmin)
+    - [3. Backend Service (`web`)](#3-backend-service-web)
+    - [4. Database Migrator (`migrator`)](#4-database-migrator-migrator)
+    - [5. MailHog Service (`mailhog`)](#5-mailhog-service-mailhog)
+    - [6. MinIO Object Storage (`minio`)](#6-minio-object-storage-minio)
+    - [7. MinIO Client (`minio_mc`)](#7-minio-client-minio_mc)
+  - [Testing Services (docker-compose-tests.yml)](#testing-services-docker-compose-testsyml)
+    - [1. Test Backend Service (`web`)](#1-test-backend-service-web)
+    - [2. Test MailHog Service (`mailhog`)](#2-test-mailhog-service-mailhog)
+    - [3. Test MinIO Storage (`minio`)](#3-test-minio-storage-minio)
+    - [4. Test MinIO Client (`minio_mc`)](#4-test-minio-client-minio_mc)
+  - [Volumes](#volumes)
+  - [Networks](#networks)
+  - [Summary (again)](#summary-1)
+  - [How to Run the Project](#how-to-run-the-project)
+    - [1. Clone the Repository](#1-clone-the-repository)
+    - [2. Create and Activate a Virtual Environment](#2-create-and-activate-a-virtual-environment)
+    - [3. Install Dependencies with Poetry](#3-install-dependencies-with-poetry)
+    - [4. Create a `.env` File](#4-create-a-env-file)
+    - [5. Run the Project with Docker Compose](#5-run-the-project-with-docker-compose)
+    - [6. Access the Services](#6-access-the-services)
+    - [7. Verify Setup](#7-verify-setup)
+    - [8. Running the Development Server without Docker](#8-running-the-development-server-without-docker)
+    - [9. Running End-to-End (E2E) Tests](#9-running-end-to-end-e2e-tests)
+    - [10. Running Tests Locally](#10-running-tests-locally)
+      - [Project Setup Summary](#project-setup-summary)
+    - [Run project with PyCharm](#run-project-with-pycharm)
+  - [Models and Entities Overview](#models-and-entities-overview)
+    - [Accounts Models](#accounts-models)
+      - [1. UserGroupModel](#1-usergroupmodel)
+      - [2. UserModel](#2-usermodel)
+      - [3. UserProfileModel](#3-userprofilemodel)
+      - [4. TokenBaseModel](#4-tokenbasemodel)
+      - [5. ActivationTokenModel](#5-activationtokenmodel)
+      - [6. PasswordResetTokenModel](#6-passwordresettokenmodel)
+      - [7. RefreshTokenModel](#7-refreshtokenmodel)
+    - [Movie Models](#movie-models)
+      - [1. MovieModel](#1-moviemodel)
+      - [2. GenreModel](#2-genremodel)
+      - [3. ActorModel](#3-actormodel)
+      - [4. CountryModel](#4-countrymodel)
+      - [5. LanguageModel](#5-languagemodel)
+      - [6. Association Tables](#6-association-tables)
+  - [Task Description: Extending the Cinema Application](#task-description-extending-the-cinema-application)
+  - [Tasks: Implementing Email Notifications for User Registration and Password Reset](#tasks-implementing-email-notifications-for-user-registration-and-password-reset)
+  - [Task: Implement User Profile Creation and Validation Schema](#task-implement-user-profile-creation-and-validation-schema)
+    - [1. Profile Schema (`schemas/profiles.py`)](#1-profile-schema-schemasprofilespy)
+    - [2. Profile Creation Endpoint (`routes/profiles.py`)](#2-profile-creation-endpoint-routesprofilespy)
+    - [3. Endpoint Behavior and Error Handling](#3-endpoint-behavior-and-error-handling)
+      - [1️⃣ Token Validation](#1-token-validation)
+      - [2️⃣ Authorization Rules](#2-authorization-rules)
+      - [3️⃣ User Existence and Status](#3-user-existence-and-status)
+      - [4️⃣ Check for Existing Profile](#4-check-for-existing-profile)
+      - [5️⃣ Avatar Upload to S3 Storage](#5-avatar-upload-to-s3-storage)
+      - [6️⃣ Profile Creation and Storage](#6-profile-creation-and-storage)
+    - [4. Full List of Possible Errors](#4-full-list-of-possible-errors)
+    - [5. Next Steps](#5-next-steps)
+      - [Tips and Guidance](#tips-and-guidance)
+      - [Running Tests](#running-tests)
+        - [1️⃣ Running Unit and Integration Tests (Without Docker)](#1-running-unit-and-integration-tests-without-docker)
+        - [2️⃣ Running End-to-End (E2E) Tests](#2-running-end-to-end-e2e-tests)
+      - [Test Results](#test-results)
+
+
 ## Features
 
 ### **Database setup**
@@ -274,17 +359,17 @@ The `get_db` function is a generator that provides a SQLAlchemy session for inte
 ### **Example Usage**
 ```python
 from fastapi import Depends, APIRouter
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db  # Import the get_db generator
 
 router = APIRouter()
 
 @router.get("/example")
-def example_route(db: Session = Depends(get_db)):
-    # Use the db session here to interact with the database
+async def example_route(db: AsyncSession = Depends(get_db)):
+    """Use the db session here to interact with the database"""
     pass
 ```
-
+  
 ### **Key Benefits**
 - Simplifies injecting dependencies into route handlers.
 - Ensures session lifecycle management (creation and cleanup).
@@ -764,6 +849,29 @@ pytest -m "unit or integration" --disable-warnings -v
 | **Apply database migrations** | `poetry run alembic upgrade head` |
 | **Run E2E tests** | `docker-compose -f docker-compose-tests.yml up --build` |
 | **Run unit/integration tests** | `pytest -m "unit or integration" -v` |
+
+---
+
+### Run project with PyCharm
+
+1. Mark the `src` directory as root
+    ![mark src directory as root](./assets/images/1_mark_directory_as_source_root.png)
+2. Close all open code tabs
+3. Restart `PyCharm`
+4. Create a new Run Configuration for the `FastAPI` project
+    ![create new fastapi run configuration](./assets/images/2_create_new_run_config.png)
+5. Add the required environment variables to the Run Configuration.
+6. Start the local Docker Compose services:
+    ```bash
+    docker-compose -f docker-compose-local.yml up --build -d
+    ```
+7. Wait for the initial database seeding to finish (this may take a moment the first time).
+    ![seed db](./assets/images/4_seed_db.png)  
+8. Run the project via `PyCharm` and use breakpoints for debugging
+9. If you need to apply database migrations manually, run:
+    ```bash
+    docker-compose -f docker-compose-local.yml up --build migrator
+    ```
 
 ---
 
