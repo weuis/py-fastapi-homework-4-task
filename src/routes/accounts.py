@@ -147,6 +147,8 @@ async def register_user(
         ) from e
     else:
         return UserRegistrationResponseSchema.model_validate(new_user)
+
+
 @router.post(
     "/activate/",
     response_model=MessageResponseSchema,
@@ -294,6 +296,8 @@ async def request_password_reset_token(
     return MessageResponseSchema(
         message="If you are registered, you will receive an email with instructions."
     )
+
+
 @router.post(
     "/reset-password/complete/",
     response_model=MessageResponseSchema,
@@ -374,7 +378,7 @@ async def reset_password(
     token_record = result.scalars().first()
     if not token_record or token_record.token != data.token:
         if token_record:
-            await db.run_sync(lambda s: s.delete(token_record))
+            await db.delete(token_record)
             await db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -382,7 +386,7 @@ async def reset_password(
         )
     expires_at = cast(datetime, token_record.expires_at).replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
-        await db.run_sync(lambda s: s.delete(token_record))
+        await db.delete(token_record)
         await db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -390,7 +394,7 @@ async def reset_password(
         )
     try:
         user.password = data.password
-        await db.run_sync(lambda s: s.delete(token_record))
+        await db.delete(token_record)
         await db.commit()
 
         login_link = "http://127.0.0.1/accounts/login/"
@@ -406,6 +410,8 @@ async def reset_password(
             detail="An error occurred while resetting the password."
         )
     return MessageResponseSchema(message="Password reset successfully.")
+
+
 @router.post(
     "/login/",
     response_model=UserLoginResponseSchema,
@@ -502,6 +508,8 @@ async def login_user(
         access_token=jwt_access_token,
         refresh_token=jwt_refresh_token,
     )
+
+
 @router.post(
     "/refresh/",
     response_model=TokenRefreshResponseSchema,

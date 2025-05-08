@@ -11,6 +11,7 @@ from validation import (
     validate_birth_date
 )
 
+
 class ProfileResponseSchema(BaseModel):
     id: int
     user_id: int
@@ -32,15 +33,14 @@ class ProfileCreateSchema(BaseModel):
 
     @classmethod
     def from_form(
-            cls,
-            first_name: str = Form(...),
-            last_name: str = Form(...),
-            gender: str = Form(...),
-            date_of_birth: date = Form(...),
-            info: str = Form(...),
-            avatar: UploadFile = File(...)
+        cls,
+        first_name: str = Form(...),
+        last_name: str = Form(...),
+        gender: str = Form(...),
+        date_of_birth: date = Form(...),
+        info: str = Form(...),
+        avatar: UploadFile = File(...)
     ) -> "ProfileCreateSchema":
-
         return cls(
             first_name=first_name,
             last_name=last_name,
@@ -56,10 +56,7 @@ class ProfileCreateSchema(BaseModel):
             validate_name(value)
             return value.lower()
         except ValueError as e:
-            raise HTTPException(
-                status_code=422,
-                detail=str(e)
-            )
+            raise ValueError(str(e))
 
     @field_validator("avatar")
     def avatar_validator(cls, value):
@@ -67,10 +64,7 @@ class ProfileCreateSchema(BaseModel):
             validate_image(value)
             return value
         except ValueError as e:
-            raise HTTPException(
-                status_code=422,
-                detail=str(e)
-            )
+            raise ValueError(str(e))
 
     @field_validator("gender")
     def gender_validator(cls, value):
@@ -78,10 +72,7 @@ class ProfileCreateSchema(BaseModel):
             validate_gender(value)
             return value
         except ValueError as e:
-            raise HTTPException(
-                status_code=422,
-                detail=str(e)
-            )
+            raise ValueError(str(e))
 
     @field_validator("date_of_birth")
     def date_of_birth_validator(cls, value):
@@ -89,16 +80,10 @@ class ProfileCreateSchema(BaseModel):
             validate_birth_date(value)
             return value
         except ValueError as e:
-            raise HTTPException(
-                status_code=422,
-                detail=str(e)
-            )
+            raise ValueError(str(e))
 
     @field_validator("info")
     def info_validator(cls, value):
         if value.strip():
             return value
-        raise HTTPException(
-            status_code=422,
-            detail="Info field cannot be empty or contain only spaces."
-        )
+        raise ValueError("Info field cannot be empty or contain only spaces.")

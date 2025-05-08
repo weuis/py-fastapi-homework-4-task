@@ -15,6 +15,8 @@ from schemas.examples.movies import (
     movie_detail_schema_example,
     movie_update_schema_example
 )
+
+
 class LanguageSchema(BaseModel):
     id: int
     name: str
@@ -26,6 +28,8 @@ class LanguageSchema(BaseModel):
             ]
         }
     }
+
+
 class CountrySchema(BaseModel):
     id: int
     code: str
@@ -38,6 +42,8 @@ class CountrySchema(BaseModel):
             ]
         }
     }
+
+
 class GenreSchema(BaseModel):
     id: int
     name: str
@@ -49,6 +55,8 @@ class GenreSchema(BaseModel):
             ]
         }
     }
+
+
 class ActorSchema(BaseModel):
     id: int
     name: str
@@ -61,6 +69,7 @@ class ActorSchema(BaseModel):
         }
     }
 
+
 class MovieBaseSchema(BaseModel):
     name: str = Field(..., max_length=255)
     date: dt_date
@@ -72,6 +81,7 @@ class MovieBaseSchema(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
     @field_validator("date")
     @classmethod
     def validate_date(cls, value):
@@ -79,6 +89,7 @@ class MovieBaseSchema(BaseModel):
         if value.year > current_year + 1:
             raise ValueError(f"The year in 'date' cannot be greater than {current_year + 1}.")
         return value
+
 
 class MovieDetailSchema(MovieBaseSchema):
     id: int
@@ -94,6 +105,8 @@ class MovieDetailSchema(MovieBaseSchema):
             ]
         }
     }
+
+
 class MovieListItemSchema(BaseModel):
     id: int
     name: str
@@ -109,6 +122,8 @@ class MovieListItemSchema(BaseModel):
             ]
         }
     }
+
+
 class MovieListResponseSchema(BaseModel):
     movies: List[MovieListItemSchema]
     prev_page: Optional[str]
@@ -123,6 +138,7 @@ class MovieListResponseSchema(BaseModel):
             ]
         }
     }
+
 
 class MovieCreateSchema(BaseModel):
     name: str
@@ -144,14 +160,17 @@ class MovieCreateSchema(BaseModel):
             ]
         }
     }
+
     @field_validator("country", mode="before")
     @classmethod
     def normalize_country(cls, value: str) -> str:
         return value.upper()
+
     @field_validator("genres", "actors", "languages", mode="before")
     @classmethod
     def normalize_list_fields(cls, value: List[str]) -> List[str]:
         return [item.title() for item in value]
+
 
 class MovieUpdateSchema(BaseModel):
     name: Optional[str] = None

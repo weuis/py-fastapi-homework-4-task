@@ -30,6 +30,7 @@ from storages import S3StorageInterface
 
 router = APIRouter()
 
+
 @router.post(
     "/users/{user_id}/profile/",
     response_model=ProfileResponseSchema,
